@@ -1,20 +1,18 @@
+# Data
 data = {
     'Customer': ['Alice', 'Bob', 'Charlie', 'David', 'Eve'],
     'Amount_Spent': [150.0, 250.0, 80.0, 300.0, 120.0]
 }
 
-
-
-Answer 1
+# Q1: Find the average amount spent
 amounts = data['Amount_Spent']
-average = sum(amounts) / len(amounts)
-print("Average amount spent:", average)
+average_amount = sum(amounts) / len(amounts)
+print("Average amount spent:", average_amount)
 
-
-
-Answer 2 
-amounts = data['Amount_Spent']
+# Q2: Find the customer with highest amount spent
 customers = data['Customer']
 
 max_index = amounts.index(max(amounts))
-print("Customer with highest amount spent:", customers[max_index])
+highest_customer = customers[max_index]
+
+print("Customer with highest amount spent:", highest_customer)
