@@ -1,4 +1,6 @@
-pandas
 flask
+pandas
 numpy
 scikit-learn
+joblib
+xgboost
