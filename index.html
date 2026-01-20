@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planetary Habitability AI</title>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+:root{
+  --bg:#f4f6fb;
+  --bg-accent:#eef2ff;
+  --accent1:#6366f1;
+  --accent2:#22d3ee;
+  --accent3:#4ade80;
+  --glass:rgba(255,255,255,0.65);
+  --glass-border:rgba(0,0,0,0.08);
+  --text:#0f172a;
+  --muted:#94a3b8;
+}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif}
+
+body{
+  margin:0;
+  color:var(--text);
+  background:radial-gradient(circle at top,var(--bg-accent),var(--bg));
+  overflow-x:hidden;
+}
+
+#preloader{position:fixed;inset:0;z-index:9999;background:black;display:flex;align-items:center;justify-content:center;}
+#universe{position:absolute;width:100%;height:100%;}
+#singularity{width:6px;height:6px;border-radius:50%;background:white;animation:singularity 5s ease forwards;}
+@keyframes singularity{0%{transform:scale(1);opacity:1}30%{transform:scale(1);opacity:1}60%{transform:scale(40);opacity:1}100%{transform:scale(120);opacity:0}}
+
+header{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:18px 32px;backdrop-filter:blur(14px);}
+.logo{font-weight:700;font-size:1.3rem}
+nav a{margin-left:26px;color:var(--text);text-decoration:none;font-weight:500;position:relative}
+nav a::after{content:"";position:absolute;left:0;bottom:-6px;width:0;height:2px;background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));transition:.3s}
+nav a:hover::after{width:100%}
+
+section{min-height:100vh;padding:90px 20px;display:flex;align-items:center}
+.container{max-width:1200px;margin:auto;width:100%}
+
+.hero{text-align:center}
+.hero h1{font-size:clamp(2.2rem,5vw,3.5rem)}
+.hero p{color:var(--muted);max-width:700px;margin:20px auto}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px}
+.card{background:var(--glass);border:1px solid var(--glass-border);border-radius:22px;padding:28px;backdrop-filter:blur(20px);transition:.4s ease;}
+.card:hover{transform:translateY(-10px);box-shadow:0 20px 40px rgba(0,0,0,.08)}
+
+.field{margin-top:18px;position:relative}
+.field label{font-size:.9rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.field small{display:block;font-size:.75rem;color:#b0b7c3;margin-top:4px}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;cursor:help;position:relative}
+.info span{visibility:hidden;width:180px;background-color:var(--accent1);color:white;text-align:center;border-radius:6px;padding:6px;position:absolute;z-index:10;bottom:125%;left:50%;transform:translateX(-50%);opacity:0;transition:opacity 0.3s;}
+.info:hover span{visibility:visible;opacity:1;}
+
+input{width:100%;margin-top:6px;padding:12px;border-radius:12px;border:1px solid #e5e7eb;color:var(--text)}
+input::placeholder{color:#a3a3a3;font-style:italic;}
+button{margin-top:24px;width:100%;padding:14px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--accent1),var(--accent2),var(--accent3));color:white;font-weight:700;cursor:pointer}
+.result{font-size:2rem;margin-top:16px;font-weight:700;color:var(--accent1)}
+table{width:100%;margin-top:16px;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid #e5e7eb;font-size:.9rem}
+th{text-align:left;color:var(--muted)}
+#cursor{position:fixed;top:0;left:0;pointer-events:none;z-index:1000}
+footer{text-align:center;padding:40px 0;color:var(--muted);font-size:.8rem}
+@media(max-width:768px){nav{display:none}}
+.download-buttons{display:flex;gap:16px;margin-top:12px}
+.download-buttons button{flex:1;margin-top:0}
+</style>
+</head>
+<body>
+
+<!-- Preloader -->
+
+
+<header>
+  <div class="logo">🌌 Planetary AI</div>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#predict">Predict</a>
+    <a href="#ranking">Ranking</a>
+  </nav>
+</header>
+
+<!-- Home -->
+<section id="home">
+  <div class="container hero">
+    <h1>Planetary Habitability Intelligence</h1>
+    <p>Exploring life-supporting worlds using astrophysics and machine learning.</p>
+  </div>
+</section>
+
+<!-- Predict + Analysis -->
+<section id="predict">
+  <div class="container grid">
+    <!-- Inputs -->
+    <div class="card">
+      <h2>Predict Habitability</h2>
+      <div class="field">
+        <label>Planet Mass (Earth) <span class="info">i<span>Relative to Earth's mass</span></span></label>
+        <input id="planetMass" placeholder="0.1 – 10">
+      </div>
+      <div class="field">
+        <label>Orbital Period (days) <span class="info">i<span>Time to complete one orbit</span></span></label>
+        <input id="orbitalPeriod" placeholder="1 – 1000">
+      </div>
+      <div class="field">
+        <label>Orbit Distance (AU) <span class="info">i<span>Distance from the star</span></span></label>
+        <input id="orbitDistance" placeholder="0.01 – 10">
+      </div>
+      <div class="field">
+        <label>Star Temperature (K) <span class="info">i<span>Surface temperature</span></span></label>
+        <input id="starTemp" placeholder="2500 – 10000">
+      </div>
+      <div class="field">
+        <label>Star Radius (Solar) <span class="info">i<span>Relative to Sun</span></span></label>
+        <input id="starRadius" placeholder="0.1 – 5">
+      </div>
+      <button onclick="runPrediction()">Run Prediction</button>
+      <div id="prediction" class="result">–</div>
+<div id="habitableStatus" style="margin-top:10px;font-size:1.1rem;font-weight:600;"></div>
+
+    </div>
+
+    <!-- Analysis -->
+    <div class="card">
+      <h2>Analysis</h2>
+      <div id="featureImportance" style="height:200px;"></div>
+      <div id="scoreDistribution" style="height:200px;"></div>
+      <div id="correlationMatrix" style="height:200px;"></div>
+      <div class="download-buttons">
+        <button onclick="downloadExcel()">Download Excel</button>
+        <button onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ranking -->
+<section id="ranking">
+  <div class="container card">
+    <h2>Top Habitable Planets
+      <button style="float:right;" onclick="loadRanking('exoplanet_habitability_ranking.csv')">Reload Ranking</button>
+    </h2>
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th>Score</th></tr></thead>
+      <tbody id="rankingBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<footer>© 2026 Planetary Habitability Research Lab</footer>
+
+<script>
+/* ================= BIG BANG ANIMATION ================= */
+const u=document.getElementById('universe');const ux=u.getContext('2d');
+function resizeU(){u.width=innerWidth;u.height=innerHeight}resizeU();
+let stars=Array.from({length:600},()=>({x:innerWidth/2,y:innerHeight/2,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6}));
+function bangAnim(){ux.fillStyle='rgba(0,0,0,.25)';ux.fillRect(0,0,u.width,u.height);stars.forEach(s=>{s.x+=s.vx;s.y+=s.vy;ux.fillStyle='white';ux.fillRect(s.x,s.y,1,1)});requestAnimationFrame(bangAnim)}
+bangAnim();
+setTimeout(()=>document.getElementById('preloader').style.display='none',5000);
+
+/* ================= SOLAR CURSOR ================= */
+const c=document.getElementById('cursor'),ctx=c.getContext('2d');let w,h,mouse={x:0,y:0};
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight}resize();
+addEventListener('resize',resize);addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+const planets=[{d:18,s:.03,c:'#6366f1'},{d:28,s:.02,c:'#22d3ee'},{d:40,s:.015,c:'#4ade80'}]
+function animate(){ctx.clearRect(0,0,w,h);planets.forEach(p=>{p.a=(p.a||0)+p.s;ctx.strokeStyle='rgba(0,0,0,.1)';ctx.beginPath();ctx.arc(mouse.x,mouse.y,p.d,0,Math.PI*2);ctx.stroke();ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(mouse.x+Math.cos(p.a)*p.d,mouse.y+Math.sin(p.a)*p.d,2.5,0,Math.PI*2);ctx.fill()});requestAnimationFrame(animate)}
+animate();
+
+/* ================= PREDICTION ================= */
+let latestFeatureImportance=[],latestScores=[],latestCorrelations=[];
+async function runPrediction(){
+  const payload = {
+    planet_mass_earth: parseFloat(document.getElementById('planetMass').value),
+    orbital_period_days: parseFloat(document.getElementById('orbitalPeriod').value),
+    orbit_distance_au: parseFloat(document.getElementById('orbitDistance').value),
+    star_temperature_k: parseFloat(document.getElementById('starTemp').value),
+    star_radius_solar: parseFloat(document.getElementById('starRadius').value)
+  };
+  try{
+    const response = await fetch('/predict',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if(data.error){alert('API Error: '+data.error);return;}
+    document.getElementById('prediction').innerText =
+    "Habitability Score: " + data.habitability_score.toFixed(3);
+
+document.getElementById('habitableStatus').innerHTML =
+    data.habitable === 1
+      ? "<span style='color:#16a34a'>✅ Habitable Planet</span>"
+      : "<span style='color:#dc2626'>❌ Not Habitable</span>";
+
+
+    latestFeatureImportance = data.feature_importance;
+    latestScores = data.all_scores;
+    latestCorrelations = data.correlations;
+
+    updateFeatureImportance(latestFeatureImportance);
+    updateScoreDistribution(latestScores);
+    updateCorrelationMatrix(latestCorrelations);
+
+  }catch(err){console.error(err);alert('Error fetching prediction.');}
+}
+
+/* ================= CHARTS ================= */
+function updateFeatureImportance(fi){
+  const features=['Planet Mass','Orbital Period','Orbit Distance','Star Temp','Star Radius'];
+  Plotly.newPlot('featureImportance',[{type:'bar',x:features,y:fi,marker:{color:['#6366f1','#22d3ee','#4ade80','#fbbf24','#f472b6']}}],{margin:{t:20}});
+}
+function updateScoreDistribution(scores){
+  Plotly.newPlot('scoreDistribution',[{x:scores,type:'histogram',marker:{color:'#6366f1'}}],{margin:{t:20}});
+}
+function updateCorrelationMatrix(corr){
+  Plotly.newPlot('correlationMatrix',[{z:corr,x:['Mass','Period','Distance','Temp','Radius'],y:['Mass','Period','Distance','Temp','Radius'],type:'heatmap',colorscale:'Viridis'}],{margin:{t:20}});
+}
+
+/* ================= DOWNLOAD ================= */
+async function downloadExcel(){
+  try{
+    const response = await fetch('/export_csv',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({feature_importance:latestFeatureImportance,all_scores:latestScores,correlations:latestCorrelations})
+    });
+    const blob = await response.blob();
+    const link = document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='planet_analysis.xlsx'; link.click();
+  }catch(err){console.error(err);}
+}
+
+async function downloadPDF(){
+  try{
+    const response = await fetch('/export_pdf',{
+
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({feature_importance:latestFeatureImportance,all_scores:latestScores,correlations:latestCorrelations})
+    });
+    const blob = await response.blob();
+    const link = document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='planet_analysis.pdf'; link.click();
+  }catch(err){console.error(err);}
+}
+
+/* ================= RANKING FROM CSV ================= */
+async function loadRanking(csvFile){
+  try{
+    const response = await fetch(csvFile);
+    const text = await response.text();
+    const rows = text.trim().split('\n').slice(1);
+    const tbody = document.getElementById('rankingBody');
+    tbody.innerHTML='';
+    rows.forEach((row,i)=>{
+      const cols=row.split(',');
+      tbody.innerHTML+=`<tr><td>${i+1}</td><td>${cols[0]}</td><td>${parseFloat(cols[1]).toFixed(3)}</td></tr>`;
+    });
+  }catch(err){console.error('Ranking load error:',err);}
+}
+
+// Initial load
+loadRanking('exoplanet_habitability_ranking.csv');
+</script>
+
+</body>
+</html>
